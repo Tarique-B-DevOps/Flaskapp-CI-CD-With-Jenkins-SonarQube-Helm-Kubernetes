@@ -1,0 +1,69 @@
+pipeline {
+
+// Set global environment variables 
+  environment {
+    registry = "mtariqueb/flask_todoapp"
+    registryCredential = 'tarique-dockerhub'
+    dockerImage = ''
+  }
+  // Build Docker image from Dockerfile present at the root of repository  
+  agent any
+  stages {
+    stage ('Build Docker Image'){
+        steps {
+            script{
+                dockerImage = docker.build registry + ":$BUILD_NUMBER"
+
+            }
+        
+        }
+    }
+// Push the image to dockerhub repository 
+    stage ('Push Image to Dockerhub'){
+        steps {
+            script {
+                docker.withRegistry( '', registryCredential ) {
+                dockerImage.push()
+
+                }
+            }
+        }
+    }
+// set current imagetag with current build number
+    stage ('Update Image Tag in K8s Config') {
+        steps {
+              sh "sed -i 's+mtariqueb/flask_todoapp.*+mtariqueb/flask_todoapp:${BUILD_NUMBER}+g' k8sdeployment.yml"
+        
+        }
+    
+    }
+
+// Transfer Kubernetes configurations to the Master Node 
+    stage ('Transfer Configs to Master Node ') {
+        steps {
+            script {
+                  sshagent(['df574488-5eff-47d2-8849-7926bad4f00c']) {
+                  sh 'scp -o StrictHostKeyChecking=no k8sdeployment.yml k8sservice.yml ubuntu@3.82.241.188:/home/ubuntu/k8sConfigs/'
+            }
+          }
+        }
+      }
+// Create or apply kubernetes configuration to deploy or update the the app.
+
+    stage ('Deploy App on Kubernetes Cluster') {
+    agent {label 'MASTER-MAIN'}
+        steps {
+            script {
+                try {
+                    sh "kubectl apply -f ~/k8sConfigs/"
+
+                }catch(error) {
+                    sh "kubectl create -f ~/k8sConfigs/"
+
+                    }
+
+                }
+            }
+        }    
+    }
+}
