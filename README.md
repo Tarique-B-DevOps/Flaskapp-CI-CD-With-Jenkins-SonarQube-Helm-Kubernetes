@@ -26,7 +26,7 @@
 
 
 
-- ## Access Application on Service's Loadbalancer URL.
+- ## Access Application on Loadbalancer URL.
 
 
 ![Screenshot (36)](https://user-images.githubusercontent.com/86839948/211161336-531aceaa-021d-4e71-b504-30e2b7383e21.jpg)
