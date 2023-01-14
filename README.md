@@ -15,6 +15,11 @@
 - #### Docker Hub Account 
 - #### Jenkins Integration with Github
 
+
+# Architecture
+
+![flask-deployment-architecture](https://user-images.githubusercontent.com/86839948/212464905-2c0fb106-2cda-4404-b9ea-2d27f70c9035.png)
+
 # Screenshots :
 
 - ## Kubernetes Cluster
