@@ -1,29 +1,50 @@
-# Jenkins CI-CD Pipeline for Flask Todo app on Kubernetes.
+# Jenkins CI/CD Pipeline for Flask app with SonarQube, Docker and Helm Chart for Kubernetes.
+
+
+- #### Pipeline Script = [`Jenkinsfile-k8s`](Jenkinsfile-k8s)
+
+- #### Helm Chart = [`helm-chart`](helm-chart)
 
 # Pre-requisites :
 
 - #### Jenkins Controller
 - #### Jenkins Slave Node with Kubernetes Env.
 - #### Kubernetes Cluster
-- #### Docker Hub Account
-- #### Jenkins & Github Integration
+- #### Helm Chart
+- #### SonarQube Integration with Jenkins
+- #### Docker Hub Account 
+- #### Jenkins Integration with Github
 
 # Screenshots :
 
 - ## Kubernetes Cluster
 
 
-![Screenshot (30)](https://user-images.githubusercontent.com/86839948/211161124-d0a5d9ae-a219-4654-95c5-2de8d07a059f.jpg)
+![Screenshot (50)](https://user-images.githubusercontent.com/86839948/212459979-e0117131-483f-4c5b-a41c-2ba2250c0664.png)
 
 
 - ## Pipeline
 
 
-![Screenshot (38)](https://user-images.githubusercontent.com/86839948/211160654-a32944fc-4b36-4d61-82b0-747f925a5af3.jpg)
+![Screenshot (44)](https://user-images.githubusercontent.com/86839948/212460559-af3b7ad1-49bb-4404-afdd-13e1873df3bb.png)
 
 
-![Screenshot (31)](https://user-images.githubusercontent.com/86839948/211160737-1b4e2edf-a964-4a1a-b34f-99a01d38e583.jpg)
+- ## SonarQube Analysis
 
+
+![Screenshot (42)](https://user-images.githubusercontent.com/86839948/212460112-4f706aa8-591f-49e9-abbb-cdc812f8c381.png)
+
+
+- ## DockerHub Repo
+
+
+![Screenshot (56)](https://user-images.githubusercontent.com/86839948/212460704-9eef2d0f-4bbd-4ec7-9d0e-edbbe89ab699.png)
+
+
+- ## Kubernetes Resources 
+
+
+![Screenshot (54)](https://user-images.githubusercontent.com/86839948/212460026-9091caa7-95a6-460c-9128-6b417c639c8e.png)
 
 
 - ## Access Application on Loadbalancer URL.
