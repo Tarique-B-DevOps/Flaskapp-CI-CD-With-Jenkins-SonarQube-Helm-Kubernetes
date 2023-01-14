@@ -5,10 +5,34 @@ pipeline {
     registry = "mtariqueb/flask_todoapp"
     registryCredential = 'tarique-dockerhub'
     dockerImage = ''
+    release = 'prod-release-${BUILD_NUMBER}'
+    projectKey = 'Flask-App-Analysis'
   }
-  // Build Docker image from Dockerfile present at the root of repository  
   agent any
   stages {
+  // SonarQube Code Quality Analysis
+    stage('SonarQube Analysis') {
+        steps {
+            script {
+                def scannerHome = tool 'sonarqube-scanner';
+                withSonarQubeEnv("sonar-server-gcp") {
+                sh "${scannerHome}/bin/sonar-scanner \
+                -Dsonar.projectKey=${projectKey} \
+                -Dsonar.sources=."
+               }
+           }
+       }
+   }
+   // Quality Gate to abort the pipeline in case the STATUS is "ERROR"
+   stage ("SonarQube Quality Gate"){
+        steps {
+            timeout (time: 2 , unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+            }
+        }
+    
+    }
+   // Build Docker image from Dockerfile present at the root of repository
     stage ('Build Docker Image'){
         steps {
             script{
@@ -30,35 +54,35 @@ pipeline {
         }
     }
 // set current imagetag with current build number
-    stage ('Update Image Tag in K8s Config') {
+    stage ('Update Image Tag in Helm Values') {
         steps {
-              sh "sed -i 's+mtariqueb/flask_todoapp.*+mtariqueb/flask_todoapp:${BUILD_NUMBER}+g' k8sdeployment.yml"
+              sh "sed -i 's+BUILD_NUM_TAG+${BUILD_NUMBER}+g' helm-chart/values.yaml"
         
         }
     
     }
 
-// Transfer Kubernetes configurations to the Master Node 
-    stage ('Transfer Configs to Master Node ') {
+// Transfer helm chart configurations to the Master Node 
+    stage ('Transfer Helm Chart to Main Node ') {
         steps {
             script {
                   sshagent(['df574488-5eff-47d2-8849-7926bad4f00c']) {
-                  sh 'scp -o StrictHostKeyChecking=no k8sdeployment.yml k8sservice.yml ubuntu@3.82.241.188:/home/ubuntu/k8sConfigs/'
+                  sh 'scp -o StrictHostKeyChecking=no -r helm-chart ubuntu@54.84.141.250:/home/ubuntu/k8sConfigs/'
             }
           }
         }
       }
-// Create or apply kubernetes configuration to deploy or update the the app.
+// Install or upgrade the helm chart on kubernetes cluster
 
-    stage ('Deploy App on Kubernetes Cluster') {
+    stage ('Deploy Helm Chart on Kubernetes Cluster') {
     agent {label 'MASTER-MAIN'}
         steps {
             script {
                 try {
-                    sh "kubectl apply -f ~/k8sConfigs/"
+                    sh "helm install ${release} ~/k8sConfigs/helm-chart"
 
                 }catch(error) {
-                    sh "kubectl create -f ~/k8sConfigs/"
+                    sh "helm upgrade ${release} ~/k8sConfigs/helm-chart"
 
                     }
 
